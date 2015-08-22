@@ -1,6 +1,11 @@
 package csvGenerator;
 
 public class Inventory {
+	@Override
+	public String toString() {
+		return "Inventory [gameId=" + gameId + ", price=" + price + ", stock="
+				+ stock + "]";
+	}
 	private Long gameId;
 	private double price;
 	private Long stock;

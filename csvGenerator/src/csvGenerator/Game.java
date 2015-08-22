@@ -29,4 +29,9 @@ public class Game {
 	public void setMsrp(double msrp) {
 		this.msrp = msrp;
 	}
+	@Override
+	public String toString() {
+		return "Game [gameId=" + gameId + ", gameName=" + gameName
+				+ ", description=" + description + ", msrp=" + msrp + "]";
+	}
 }

@@ -1,9 +1,11 @@
 package csvGenerator;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -36,12 +38,14 @@ public class CsvReader<T> {
 			}
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.err.println("Error! " + e.getMessage() + e.getStackTrace());
 		} finally {
 			if (br != null) {
 				try {
 					br.close();
 				} catch (IOException e) {
+					e.printStackTrace();
 					System.err.print("There was an error closing the reader. Well poop.");
 				}
 			}
@@ -49,6 +53,53 @@ public class CsvReader<T> {
 
 		// Return the collection. Will be empty if an error occured
 		return results;
+	}
+
+	public <U extends CsvWritable> void writeCsvFile(Collection<? extends CsvWritable> uList, String fileName) {
+		File file = new File("src/main/resources/" + fileName);
+		BufferedWriter bw = null;
+		try {
+			// if file doesnt exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+
+			FileWriter fw = new FileWriter(file.getAbsoluteFile());
+			bw = new BufferedWriter(fw);
+			if (uList.size() > 0) {
+				String header = makeLine(uList.iterator().next().csvHeader());
+				bw.write(header);
+			}
+			
+			for (CsvWritable u : uList) {
+				bw.write(makeLine(u.toCsvFields()));
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (bw != null) {
+				try {
+					bw.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private String makeLine(List<String> fields) {
+		StringBuilder builder = new StringBuilder();
+		Boolean first = true;
+		for (String field : fields) {
+			if (!first) {
+				builder.append(delimiter);
+			}
+			builder.append(field);
+			first = false;
+		}
+		builder.append('\n');
+		return builder.toString();
 	}
 
 	private Map<String, Integer> mapHeaderToPosition(String line) {
@@ -92,7 +143,7 @@ public class CsvReader<T> {
 		Integer last = 0;
 		for (Integer position : delimiterPositions) {
 			splits.add(line.substring(last, position));
-			last = position;
+			last = position + 1;
 		}
 		// Also add the part after the last delimiter. This also takes care of the single-column case
 		if (line.length() > 0) {
